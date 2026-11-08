@@ -1,0 +1,12 @@
+import test from 'node:test';import assert from 'node:assert/strict';
+import {getProfile,LANGUAGES,WORD_FEUD_BONUS,cleanLetters,isBlankLetter} from '../src/profiles.js';
+import {makeLexicon,solve,emptyBoard,scoreTile} from '../src/engine.js';
+import {lookupDefinition} from '../src/definitions.js';
+import {readOCRText} from '../src/ocr.js';
+const plain=()=>Array(225).fill('.');
+test('six Wordfeud language profiles have separate values and an ordinary center square',()=>{assert.equal(Object.keys(LANGUAGES).length,6);for(const code of Object.keys(LANGUAGES)){const p=getProfile('wordfeud',code);assert.equal(p.bonuses.length,225);assert.equal(p.bonuses[112],'.');assert.equal(p.sweepBonus,40);assert(p.alphabet.length>=24);}assert.equal(WORD_FEUD_BONUS[0],'3L');assert.equal(WORD_FEUD_BONUS[4],'3W');assert.equal(WORD_FEUD_BONUS[2*15+2],'2W');});
+test('Crossplay and Wordfeud use different C and K scores',()=>{const c=getProfile(),w=getProfile('wordfeud','en');assert.equal(c.values.C,3);assert.equal(w.values.C,4);assert.equal(c.values.K,6);assert.equal(w.values.K,5);});
+test('Danish, Swedish and German alphabets preserve their accented tiles',()=>{assert.equal(cleanLetters('æøa\u030a?',getProfile('wordfeud','da'),{blank:true}),'ÆØÅ?');assert.equal(cleanLetters('åäö',getProfile('wordfeud','sv')),'ÅÄÖ');assert.equal(cleanLetters('äöü',getProfile('wordfeud','de')),'ÄÖÜ');assert.equal(cleanLetters('åö',getProfile('wordfeud','da')),'Å');});
+test('Unicode words, existing blanks, and blank substitutions score correctly',()=>{const p=getProfile('wordfeud','da'),b=emptyBoard();b[112]='R';const lex=makeLexicon('ÅR ÆR STÆRK SCHÖN',p.alphabet);assert(!lex.words.has('SCHÖN'));const m=solve(b,'Å',lex,plain(),p.values).find(x=>x.word==='ÅR'&&x.direction==='across');assert(m);assert.equal(m.score,5);const blank=solve(b,'?',lex,plain(),p.values).find(x=>x.word==='ÅR'&&x.direction==='across');assert.equal(blank.score,1);assert(blank.placed[0].blank);assert.equal(scoreTile('å',p.values),0);assert(isBlankLetter('æ'));assert(!isBlankLetter('?'));});
+test('OCR keeps Scandinavian letters without stripping accents',()=>{const p=getProfile('wordfeud','da');assert.equal(readOCRText('Æ\n',p.alphabet),'Æ');assert.equal(readOCRText('A\u030a',p.alphabet),'Å');assert.equal(readOCRText('0',p.alphabet),'O');});
+test('non-English definitions never fall through to English meanings',async()=>{const r=await lookupDefinition('gift',{language:'da',fetcher:()=>{throw Error('Should not fetch English');}});assert(r.unavailableLanguage);assert.deepEqual(r.senses,[]);});

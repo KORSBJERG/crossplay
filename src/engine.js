@@ -17,7 +17,7 @@ export const BONUS=[
 '3L . . 3W . . . 2L . . . 3W . . 3L'].flatMap(x=>x.split(' '));
 for(let i=0;i<225;i++)if(BONUS[i]==='.'&&BONUS[224-i]!=='.')BONUS[i]=BONUS[224-i];
 export const emptyBoard=()=>Array(225).fill('');
-export function makeLexicon(text){const words=new Set(text.toUpperCase().split(/\s+/).filter(x=>/^[A-Z]{2,15}$/.test(x)));const root={};for(const word of words){let n=root;for(const c of word)n=n[c]??={};n.$=true;}return {words,root};}
+export function makeLexicon(text,alphabet='ABCDEFGHIJKLMNOPQRSTUVWXYZ'){const words=new Set(text.normalize('NFC').toUpperCase().split(/\s+/).filter(x=>x.length>=2&&x.length<=15&&[...x].every(c=>alphabet.includes(c))));const root={};for(const word of words){let n=root;for(const c of word)n=n[c]??={};n.$=true;}return {words,root};}
 export function scoreTile(c,values=VALUES){return c===c.toLowerCase()?0:(values[c]??0);}
 export function solve(board,rack,lex,bonuses=BONUS,values=VALUES,limit=100){
  if(board.length!==225)throw Error('Board must contain 225 squares');

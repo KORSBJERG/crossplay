@@ -8,3 +8,10 @@ public/ocr/tesseract-core*
 public/ocr/eng.traineddata.gz
 public/words.txt
 public/dictionary/
+.cache/
+public/wordlists/
+public/licences/
+public/ocr/*.traineddata.gz
+ios/App/Pods/
+ios/App/build/
+ios/App/App/public/

@@ -10,8 +10,8 @@ export function baseForms(word){
  }
  return [...new Set(forms)].filter(x=>x.length>1);
 }
-export async function lookupDefinition(input,{signal,fetcher=fetch}={}){
- const word=input.toLowerCase();if(!/^[a-z]{2,15}$/.test(word))throw Error('Choose a suggested word to look up.');
+export async function lookupDefinition(input,{signal,fetcher=fetch,language='en'}={}){
+ const word=input.normalize('NFC').toLowerCase();if(language!=='en')return {word,lemma:word,senses:[],unavailableLanguage:true};if(!/^[a-z]{2,15}$/.test(word))throw Error('Choose a suggested word to look up.');
  const letter=word[0];let chunk=cache.get(letter);
  if(!chunk){
   // Only a bundled alphabetic chunk is loaded from this app's own hosting.

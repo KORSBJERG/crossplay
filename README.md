@@ -1,100 +1,125 @@
-# Next Move — Crossplay companion
+# Next Move — word game companion
 
-A mobile-friendly web app for Peter: import an NYT Crossplay screenshot, check the recognized board and rack, and explore scored moves with placement previews.
+A mobile-friendly personal helper for NYT Crossplay and Wordfeud: import a screenshot, check the board and rack, and explore scored moves. Tap the small book icon for English word meanings.
+
+## Games and languages
+
+| Game | Word-list languages |
+| --- | --- |
+| NYT Crossplay | English |
+| Wordfeud | English, Danish, Swedish, Norwegian Bokmål, Dutch, German |
+
+Select the game and word language above the board. Each game/language keeps a separate saved board, rack, tile values, and bonus layout. The interface remains English; the selector changes the word list, tile alphabet, scores, and OCR model.
+
+Wordfeud uses its own standard board layout and official language-specific tile scores, including Æ/Ø/Å, Ä/Ö, and Ä/Ö/Ü. Both games award 40 extra points for a seven-tile sweep. Crossplay's original configuration is retained.
+
+**Open lists are not official game dictionaries.** Suggestions can be rejected and accepted words may be missing. You can import a word list you are entitled to use for the selected alphabet. English meanings are deliberately disabled for non-English games, to avoid showing an unrelated English definition for a matching spelling.
 
 ## Publish on Cloudflare
 
-### Option A — Cloudflare Workers (recommended)
+### Cloudflare Workers
 
-1. In Cloudflare, open **Workers & Pages → Create application → Import a repository** (or **Connect to Git**).
-2. Select **KORSBJERG/crossplay**, branch **main**.
-3. Use these settings:
+Connect **KORSBJERG/crossplay**, branch **main**, and use:
 
 | Setting | Value |
 | --- | --- |
-| Root directory | Repository root (leave blank) |
+| Root directory | Repository root; leave blank |
 | Build command | `npm run build` |
 | Deploy command | `npx wrangler deploy` |
 | Environment variables / secrets | None |
 | Node.js | 22 or newer |
 
-The checked-in `wrangler.jsonc` serves the generated `dist` directory as Worker static assets. No Worker backend, database, paid AI service, or NYT sign-in is required. If Cloudflare asks for a preview deploy command, use `npx wrangler versions upload`.
+The checked-in `wrangler.jsonc` serves `dist` as static assets. No backend, database, paid AI service, or game account is required. For a preview deploy command, use `npx wrangler versions upload` if requested by Cloudflare.
 
-### Option B — Cloudflare Pages
+### Cloudflare Pages
 
-Create a **Pages** project connected to this repository, select **None** as the framework preset, and set:
+Create a Pages project connected to the repository. Framework preset **None**, build command **`npm run build`**, output **`dist`**, production branch **`main`**, root left blank. Pages does not need a deploy command. The repository includes `.node-version`.
 
-- Build command: `npm run build`
-- Build output directory: `dist`
-- Root directory: leave blank
-- Production branch: `main`
-- Node.js: 22 or newer (the repository includes `.node-version`)
-
-Do not configure a deploy command in Pages. Cloudflare handles publication after the build.
+The build downloads integrity-pinned open word lists and copies OCR models from npm dependencies. It includes all six languages in the deployment, but browsers only load the selected dictionary and recognition model.
 
 ## Use on your iPhone
 
-1. Take a screenshot with the whole Crossplay board and your rack visible. Zoom the board fully out. Light mode with blue tiles is supported.
-2. Open this app in Safari and tap **Import a screenshot**.
-3. Check the green crop square, adjust it if needed, and tap **Read screenshot**.
-4. Check every recognized letter. Tap a square to correct it, erase it, change its premium, or mark an existing blank tile. Orange outlines indicate low-confidence recognition. `?` on the board must be corrected before solving.
-5. Check the seven rack letters. Use `?` only for an actual blank tile in your rack.
-6. Tap **Find my moves** and select a result. Green tiles show where to play. Italic letters indicate blank substitutions.
-7. In Safari, use **Share → Add to Home Screen** for quick access.
+1. Select the game and word language.
+2. Take a full-board screenshot with the rack visible. Crossplay's blue-tile theme and Wordfeud's classic light tiles with dark lettering are supported.
+3. Import it, check the green crop rectangle, adjust if needed, and tap **Read screenshot**.
+4. Check every letter. Tap a square to correct it, erase it, change its bonus, or mark an existing zero-point blank. Orange outlines mark uncertain recognition. Board `?` marks must be corrected before solving.
+5. Check the rack. Use `?` only for a genuine rack blank, not an unreadable letter.
+6. Tap **Find my moves**. Green squares show the new tiles for the selected move. Italic letters use a blank.
+7. In English games, tap the small book icon beside a word for its meaning. Closing the popup leaves the selected move unchanged.
 
-The example board is under **More tools & settings**.
+Use Safari's **Share → Add to Home Screen** for quick access. The example Crossplay board is under **More tools & settings**.
 
-## What works
+### Random Wordfeud boards
 
-- Screenshot import, automatic board location, and adjustable square crop.
-- On-device OCR using locally hosted Tesseract.js, its WASM engine, and English recognition data.
-- Recognition of the 15×15 board and the seven-tile rack below it.
-- Editable board, rack, bonus squares, blank tiles, and point values.
-- Trie-based move search in a Web Worker, with perpendicular dictionary checks, board attachment, opening-center requirement, rack multiplicity, and edge handling.
-- Scores include new letter/word bonuses, all crossing words, zero-point blanks, and Crossplay's 40-point bonus for using seven tiles.
-- Up to 100 highest-scoring placements with visual previews.
-- Board/rack autosave in this browser, and custom plain-text dictionary import for the current session.
-- Responsive layout, accessible labeled controls, paste-image support on compatible browsers, and a home-screen manifest.
+Choose **Random / custom**. Bonus squares begin empty: tap squares to enter the bonuses from your game, then tick the confirmation before solving. Random bonus placement is not inferred from screenshots. Covered bonuses no longer affect existing tiles, so only bonuses on empty squares matter for the next move.
+
+## Open language packs and licences
+
+| Language | Included alternative | Selected licence |
+| --- | --- | --- |
+| English | ENABLE | Public domain |
+| Danish | Stavekontrolden/Hunspell, direct entries and one-step affix expansion | MPL 1.1 from its tri-licence |
+| Swedish | OpenSLR SLR29 pronunciation lexicon, pronunciations removed | CC0 |
+| Norwegian Bokmål | Norsk Ordbank, 2022 extraction by Ondkloss | CC BY 4.0 |
+| Dutch | OpenTaal approved base-word list | Revised BSD |
+| German | Enz German word-game list | CC0 |
+
+The generated `/wordlists/manifest.json` records counts, sources, and licences. `/credits.html` provides attribution; `/licences/` includes notices, the full Dutch notice, and original Danish `.dic`/`.aff` source files. Transformations are in `scripts/prepare-languages.mjs`. Preserve these when redistributing.
+
+These lists differ materially from Wordfeud's official lists: Danish is not Retskrivningsordbogen, Swedish is not SAOL, Norwegian is not NSF-ordlisten, Dutch is not TaalTik, and English is not TWL/SOWPODS. Some packs contain corpus-specific words or names; others omit inflections. Do not market them as exact matches. German ß is expanded to SS. Entries outside a game's physical tile alphabet or longer than 15 tiles are excluded.
 
 ## Word meanings
 
-Tap the small book icon beside any suggested move to open a compact meaning popup. The move list stays clean. Meanings come from a bundled WordNet 3.1 dictionary, with up to four senses and examples where available. Definitions load only when tapped, from alphabetic JSON chunks hosted with this app, and are cached for the session. Selected words are never sent to an external dictionary or AI service. Simple inflections can show the base word and are labelled as such. Some rare words, interjections, and inflections are missing; the app says so rather than inventing a meaning.
+The small book icon opens a compact popup. English definitions are bundled from WordNet 3.1 with up to four senses and examples. Lookups load only an alphabetic chunk from this app, cached for the session; no selected word is sent to an external service. Simple English inflections may show a labelled base form. Rare words can lack definitions.
 
-## Accuracy and limits
+Definitions in other languages are not bundled; the popup says so explicitly. It never shows an English meaning for Danish `gift`, for example.
 
-**Dictionary:** Crossplay uses NWL2023, according to the [NYT help page](https://thenewyorktimeshelpcenter.helpjuice.com/crossplay-app). This app ships the public-domain ENABLE list instead. It is not an exact Crossplay dictionary: some suggestions may be rejected and some valid moves may be missing. Import a word list you are entitled to use for closer coverage. The app never claims that ENABLE suggestions are guaranteed to be accepted.
+## iOS / App Store preparation
 
-**OCR:** Optimized for full-size, light-mode iPhone screenshots with blue tiles. Dark mode, zoomed boards, changed app fonts/layouts, compression, and screenshots with overlays may need corrections. Existing blank tile assignments must be marked manually, because letter recognition alone does not distinguish their zero-point value. Check all tiles before using scores. Rack blanks or unreadable rack letters can appear as `?`; verify that they are real blanks before solving.
+A Capacitor configuration and build commands are included. See **[docs/IOS_RELEASE.md](docs/IOS_RELEASE.md)** for setup, signing, device tests, privacy declarations, dictionary terms and App Store requirements.
 
-**Scoring:** The premium layout was reconstructed from the supplied screenshot using its rotational symmetry. The default tile values are editable, including J and X, which were absent from that screenshot. Verify those values against your game. This app ranks immediate scores; it does not predict opponents or evaluate multi-turn strategy.
+```sh
+npm ci
+npm run ios:setup   # once, on a Mac; creates the iOS project
+npm run ios:open
+```
 
-**Privacy:** Screenshot pixels and recognized game state are processed in the browser. There are no screenshot uploads to a backend, analytics, trackers, API keys, or NYT credentials. Board/rack state is stored in localStorage on this browser. The original image stays in memory only. Hosting servers still receive normal static asset requests. A first load downloads OCR assets from your own deployment. This app needs an internet connection to load its assets; it is not an offline PWA.
+For subsequent updates:
 
-## Local development
+```sh
+npm run ios:sync
+npm run ios:open
+```
+
+This is preparation for a future native build, not a signed or submitted App Store app. Native WKWebView OCR and memory use require real-device testing. Apple approval is not guaranteed. The generic app name is **Next Move**, application ID `dk.peaknet.nextmove` (confirm availability before release), with no remote server URL.
+
+## Privacy
+
+Screenshots, game state, solver searches, and meanings are processed on-device. Boards/racks/settings are saved in localStorage, with one session per game/language. The original image remains in memory only. Custom word lists are used for the session. There are no accounts, analytics, advertising, API keys, or game credentials.
+
+The web host receives ordinary asset requests; the privacy notice explains normal hosting logs. Native configuration bundles assets locally. Read `/privacy.html` and verify the final publisher/contact details before public release.
+
+## Local development and verification
 
 ```sh
 npm ci
 npm run dev
-```
-
-```sh
 npm test
 npm run build
 npm run preview
 ```
 
-Build preparation copies OCR runtime files from pinned npm dependencies and downloads the ENABLE word list from a fixed GitHub commit, verifying its SHA-256 checksum. All assets are then included in `dist`; visitors do not load OCR files from a third-party CDN.
+Automated tests cover game-specific values, Unicode alphabets, blank scoring, seven-tile sweeps, crossing words, board edges, rack multiplicity, glyph extraction, accent preservation, dark ink, private definition loading, caching, missing words and non-English definition isolation.
 
-## Verification
+Browser QA covers game/language switching, saved sessions, random-board scoring protection, and Danish move generation. The supplied real Crossplay screenshot and an internal synthetic Danish Wordfeud fixture were available. Real Wordfeud screenshots in every language, alternate themes and a physical iPhone/native build have not yet been tested.
 
-Seventeen automated tests cover private definition chunk loading, caching, missing words, inflections and retries, plus scoring/move-legality and glyph extraction: opening placement, used premiums, crossing words, invalid perpendicular words, rack blanks, existing blanks, sweep bonuses, adjacent prefixes/suffixes, bounds, and rack multiplicity, separating score digits, retaining higher-positioned glyphs, hollow letters, and rejecting score-only tiles. Screenshot import and result selection were also checked in a real browser with the supplied iPhone screenshot. A physical iPhone/Safari device has not been tested.
+### Primary references
 
-## Credits
+- [Wordfeud rules and tile values](https://wordfeud.com/wfweb/help/)
+- [Wordfeud official dictionaries](https://wordfeud.com/dictionaries/)
+- [Standard board reference](https://github.com/Thomilist/wordfeud/blob/master/resources/boards/Wordfeud.json) — only factual premium positions are used, not its code/assets.
+- [Tesseract.js](https://github.com/naptha/tesseract.js) / Tesseract.js-core / OCR models: Apache 2.0.
+- [WordNet](https://wordnet.princeton.edu/): Princeton University licence bundled at `/dictionary/LICENSE.txt`.
+- [Capacitor](https://capacitorjs.com/): MIT.
 
-- [WordNet 3.1](https://wordnet.princeton.edu/), Copyright 2011 by Princeton University. Distributed under the WordNet licence, included at `/dictionary/LICENSE.txt`. The build extracts the complete 3.1 licence notice from the database files.
-- [Tesseract.js](https://github.com/naptha/tesseract.js), Apache-2.0.
-- [Tesseract.js core](https://github.com/naptha/tesseract.js-core), Apache-2.0.
-- [Tesseract English language data](https://github.com/naptha/tessdata), Apache-2.0.
-- [ENABLE word list](https://github.com/dolph/dictionary/blob/master/enable1.txt), public domain; compiled by M. Cooper and A. Beale. Word-list snapshot is integrity-pinned in `scripts/prepare-ocr.mjs`.
-
-Independent personal helper, not affiliated with or endorsed by The New York Times. Crossplay is a game by The New York Times.
+Independent helper. Wordfeud is a trademark of Bertheussen IT; Crossplay is a game by The New York Times. No affiliation or endorsement is implied.

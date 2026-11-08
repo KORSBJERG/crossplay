@@ -2,9 +2,9 @@
  * Connected components separate the letter from the small score in its upper corner.
  * Coordinates and pixels are local to the tile interior, never the whole screenshot.
  */
-export function isolateGlyph(rgba,width,height){
- const mask=new Uint8Array(width*height),visited=new Uint8Array(width*height),components=[];
- for(let i=0;i<mask.length;i++){const j=i*4;mask[i]=rgba[j]>175&&rgba[j+1]>175&&rgba[j+2]>175?1:0;}
+export function isolateGlyph(rgba,width,height,{darkInk=false}={}){
+ const mask=new Uint8Array(width*height),visited=new Uint8Array(width*height),components=[],fragments=[];
+ for(let i=0;i<mask.length;i++){const j=i*4;mask[i]=darkInk?(rgba[j]<115&&rgba[j+1]<115&&rgba[j+2]<115?1:0):(rgba[j]>175&&rgba[j+1]>175&&rgba[j+2]>175?1:0);}
  for(let i=0;i<mask.length;i++){
   if(!mask[i]||visited[i])continue;
   const queue=[i],pixels=[];visited[i]=1;let left=width,right=0,top=height,bottom=0;
@@ -12,14 +12,22 @@ export function isolateGlyph(rgba,width,height){
    for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){const xx=x+dx,yy=y+dy;if(xx<0||xx>=width||yy<0||yy>=height)continue;const n=yy*width+xx;if(mask[n]&&!visited[n]){visited[n]=1;queue.push(n);}}
   }
   const w=right-left+1,h=bottom-top+1;
+  fragments.push({left,top,width:w,height:h,pixels});
   // Ignore corner score digits and white fragments at the tile boundary.
   if(h>=height*.25&&pixels.length>=3&&!(left>width*.62&&bottom<height*.42)&&w<width*.97&&h<height*.97)components.push({left,top,width:w,height:h,pixels});
  }
  if(!components.length)return null;
  components.sort((a,b)=>b.height-a.height||b.pixels.length-a.pixels.length);
- const main=components[0],glyph=new Uint8Array(main.width*main.height);
- for(const p of main.pixels){const x=p%width-main.left,y=Math.floor(p/width)-main.top;glyph[y*main.width+x]=1;}
- return {width:main.width,height:main.height,mask:glyph,fill:main.pixels.length/glyph.length};
+ const main=components[0];
+ // Preserve disconnected rings/dots/accents above the letter (Å, Ä, Ö, Ü),
+ // while excluding corner score digits to the right of the main glyph.
+ const marks=fragments.filter(f=>f!==main&&f.top+f.height<=main.top&&main.top-(f.top+f.height)<height*.24&&f.left>=main.left-1&&f.left+f.width<=main.left+main.width+1&&f.height<height*.24&&f.pixels.length>=2);
+ const pixels=[...main.pixels,...marks.flatMap(f=>f.pixels)];
+ const left=Math.min(main.left,...marks.map(f=>f.left)),top=Math.min(main.top,...marks.map(f=>f.top));
+ const right=Math.max(main.left+main.width,...marks.map(f=>f.left+f.width)),bottom=main.top+main.height;
+ const w=right-left,h=bottom-top,glyph=new Uint8Array(w*h);
+ for(const p of pixels){const x=p%width-left,y=Math.floor(p/width)-top;glyph[y*w+x]=1;}
+ return {width:w,height:h,mask:glyph,fill:pixels.length/glyph.length};
 }
 
 // A font-independent comparison of normalized silhouettes. Used only to cross-check
