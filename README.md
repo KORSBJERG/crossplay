@@ -83,7 +83,7 @@ Build preparation copies OCR runtime files from pinned npm dependencies and down
 
 ## Verification
 
-Nine automated scoring/move-legality tests cover opening placement, used premiums, crossing words, invalid perpendicular words, rack blanks, existing blanks, sweep bonuses, adjacent prefixes/suffixes, bounds, and rack multiplicity. Screenshot import and result selection were also checked in a real browser with the supplied iPhone screenshot. A physical iPhone/Safari device has not been tested.
+Thirteen automated scoring/move-legality and glyph-extraction tests cover opening placement, used premiums, crossing words, invalid perpendicular words, rack blanks, existing blanks, sweep bonuses, adjacent prefixes/suffixes, bounds, and rack multiplicity, separating score digits, retaining higher-positioned glyphs, hollow letters, and rejecting score-only tiles. Screenshot import and result selection were also checked in a real browser with the supplied iPhone screenshot. A physical iPhone/Safari device has not been tested.
 
 ## Credits
 
