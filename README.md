@@ -56,6 +56,10 @@ The example board is under **More tools & settings**.
 - Board/rack autosave in this browser, and custom plain-text dictionary import for the current session.
 - Responsive layout, accessible labeled controls, paste-image support on compatible browsers, and a home-screen manifest.
 
+## Word meanings
+
+Tap the small book icon beside any suggested move to open a compact meaning popup. The move list stays clean. Meanings come from a bundled WordNet 3.1 dictionary, with up to four senses and examples where available. Definitions load only when tapped, from alphabetic JSON chunks hosted with this app, and are cached for the session. Selected words are never sent to an external dictionary or AI service. Simple inflections can show the base word and are labelled as such. Some rare words, interjections, and inflections are missing; the app says so rather than inventing a meaning.
+
 ## Accuracy and limits
 
 **Dictionary:** Crossplay uses NWL2023, according to the [NYT help page](https://thenewyorktimeshelpcenter.helpjuice.com/crossplay-app). This app ships the public-domain ENABLE list instead. It is not an exact Crossplay dictionary: some suggestions may be rejected and some valid moves may be missing. Import a word list you are entitled to use for closer coverage. The app never claims that ENABLE suggestions are guaranteed to be accepted.
@@ -83,10 +87,11 @@ Build preparation copies OCR runtime files from pinned npm dependencies and down
 
 ## Verification
 
-Thirteen automated scoring/move-legality and glyph-extraction tests cover opening placement, used premiums, crossing words, invalid perpendicular words, rack blanks, existing blanks, sweep bonuses, adjacent prefixes/suffixes, bounds, and rack multiplicity, separating score digits, retaining higher-positioned glyphs, hollow letters, and rejecting score-only tiles. Screenshot import and result selection were also checked in a real browser with the supplied iPhone screenshot. A physical iPhone/Safari device has not been tested.
+Seventeen automated tests cover private definition chunk loading, caching, missing words, inflections and retries, plus scoring/move-legality and glyph extraction: opening placement, used premiums, crossing words, invalid perpendicular words, rack blanks, existing blanks, sweep bonuses, adjacent prefixes/suffixes, bounds, and rack multiplicity, separating score digits, retaining higher-positioned glyphs, hollow letters, and rejecting score-only tiles. Screenshot import and result selection were also checked in a real browser with the supplied iPhone screenshot. A physical iPhone/Safari device has not been tested.
 
 ## Credits
 
+- [WordNet 3.1](https://wordnet.princeton.edu/), Copyright 2011 by Princeton University. Distributed under the WordNet licence, included at `/dictionary/LICENSE.txt`. The build extracts the complete 3.1 licence notice from the database files.
 - [Tesseract.js](https://github.com/naptha/tesseract.js), Apache-2.0.
 - [Tesseract.js core](https://github.com/naptha/tesseract.js-core), Apache-2.0.
 - [Tesseract English language data](https://github.com/naptha/tessdata), Apache-2.0.

@@ -7,3 +7,4 @@ public/ocr/worker.min.js
 public/ocr/tesseract-core*
 public/ocr/eng.traineddata.gz
 public/words.txt
+public/dictionary/
