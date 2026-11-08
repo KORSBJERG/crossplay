@@ -1,0 +1,26 @@
+{
+  "name": "crossplay-companion",
+  "version": "1.0.0",
+  "description": "Private, browser-only screenshot helper for NYT Crossplay",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "dev": "node scripts/prepare-ocr.mjs && vite",
+    "build": "node scripts/prepare-ocr.mjs && vite build",
+    "preview": "vite preview --host 0.0.0.0",
+    "test": "node --test test/*.test.js"
+  },
+  "keywords": [],
+  "author": "",
+  "type": "module",
+  "dependencies": {
+    "@tesseract.js-data/eng": "^1.0.0",
+    "tesseract.js": "^7.0.0",
+    "vite": "^8.3.6"
+  },
+  "private": true,
+  "devDependencies": {
+    "wrangler": "^4.158.0"
+  }
+}

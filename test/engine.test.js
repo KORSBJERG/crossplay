@@ -1,0 +1,13 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {makeLexicon,solve,emptyBoard,VALUES} from '../src/engine.js';
+const plain=()=>Array(225).fill('.');
+test('opening moves cover center and cannot float elsewhere',()=>{const moves=solve(emptyBoard(),'CAT',makeLexicon('CAT AT'),plain(),VALUES,1000);assert(moves.length>0);for(const m of moves)assert(m.placed.some(p=>p.i===112));});
+test('main score includes existing tiles but does not reuse their premiums',()=>{const b=emptyBoard(),p=plain();b[112]='A';p[112]='3W';p[111]='2L';const m=solve(b,'CT',makeLexicon('CAT'),p).find(x=>x.row===7&&x.col===6&&x.direction==='across');assert.equal(m.score,8);});
+test('new word multipliers and crossing words score independently',()=>{const b=emptyBoard(),p=plain();b[97]='A';b[98]='T';p[112]='2W';const lex=makeLexicon('AT TO');const m=solve(b,'TO',lex,p).find(x=>x.row===7&&x.col===7&&x.direction==='across');assert(m);assert.equal(m.score,10);});
+test('rejects a perpendicular word missing from the dictionary',()=>{const b=emptyBoard();b[97]='A';b[98]='T';const moves=solve(b,'IT',makeLexicon('AT IT'),plain());assert(!moves.some(x=>x.row===7&&x.col===7&&x.direction==='across'));});
+test('blank substitutions score zero and preserve their assignment',()=>{const b=emptyBoard();b[112]='A';const m=solve(b,'?T',makeLexicon('CAT'),plain()).find(x=>x.row===7&&x.col===6&&x.direction==='across');assert(m);assert.equal(m.score,2);assert(m.placed.find(x=>x.letter==='C').blank);});
+test('an existing blank scores zero',()=>{const b=emptyBoard();b[112]='a';const m=solve(b,'CT',makeLexicon('CAT'),plain()).find(x=>x.row===7&&x.col===6&&x.direction==='across');assert.equal(m.score,4);});
+test('using seven rack tiles adds the Crossplay 40-point sweep bonus',()=>{const m=solve(emptyBoard(),'LETTERS',makeLexicon('LETTERS'),plain()).find(x=>x.used===7);assert(m);assert.equal(m.score,48);});
+test('cannot omit an adjacent prefix or suffix, or run off an edge',()=>{const b=emptyBoard();b[112]='S';b[116]='S';const moves=solve(b,'CAT',makeLexicon('CAT SCAT CATS'),plain(),VALUES,1000);assert(!moves.some(x=>x.word==='CAT'&&x.row===7&&x.col===8&&x.direction==='across'));for(const m of moves)for(const p of m.placed)assert(p.i>=0&&p.i<225);});
+test('rack multiplicity and board state are preserved',()=>{const b=emptyBoard();b[112]='A';const original=[...b];const moves=solve(b,'CT',makeLexicon('CAT TACT TAT'),plain(),VALUES,1000);assert.deepEqual(b,original);for(const m of moves){const used=m.placed.map(x=>x.letter);assert(used.filter(x=>x==='T').length<=1);assert(used.filter(x=>x==='C').length<=1);}});
